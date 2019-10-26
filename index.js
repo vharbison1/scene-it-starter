@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', function()
 {   
     function renderMovies(movieArray)
     {
-      //mapped to template string literals
+      //mapped to template string literals to generate movie bootstrap data into movie-container id
         var movieHTML = movieArray.map(function (currentMovie) {
             return `
             <div class="card" style="width: 18rem;" width="300" height="300">
@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function()
               <h5 class="card-title">${currentMovie.Title}</h5>
               <h6 class="card-subtitle mb-2 text-muted">${currentMovie.Year}</h6>
               <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card's content.</p>
-              <button onClick="saveToWatchList('${currentMovie.imdbID}')" type="submit" id="add" class="btn btn-success">Save to Watchlist</button>
+              <button onClick="saveToWatchList('${currentMovie.imdbID}',this)" type="submit" class="btn btn-success watchlist">Save to Watchlist</button>
             </div>
           </div>
           `;
@@ -30,8 +30,7 @@ document.addEventListener('DOMContentLoaded', function()
       var urlEncodedSearchString = encodeURIComponent(searchString); //Sanitize the users string for non-allowed characters
       var url = "http://www.omdbapi.com/?apikey=3430a78&s=" + urlEncodedSearchString; //call to OMDB API
     
-      getData(url);
-      
+      getData(url);   
     });
 
     function getData(url)
@@ -42,7 +41,7 @@ document.addEventListener('DOMContentLoaded', function()
           if(response.data.Response == "True") //Make sure the response is successful, then render the search results
           {
             renderMovies(response.data.Search);
-            movieData = response.data.Search; //Movie Data is Global Variable, so is overriden wirh search results
+            movieData = response.data.Search; //Movie Data is Global Variable, so is overriden with search results
           }
           else 
           {
@@ -56,8 +55,7 @@ document.addEventListener('DOMContentLoaded', function()
 });
 
 
-
-function saveToWatchList(imdbID)
+function saveToWatchList(imdbID,currentElement)
 {
         var movie = movieData.find(function (currentMovie){
         return currentMovie.imdbID == imdbID; //returns the value of the FIRST element found that matches criteria.
@@ -75,17 +73,24 @@ function saveToWatchList(imdbID)
           watchlist.push(movie);
           watchlistJSON = JSON.stringify(watchlist);
           localStorage.setItem('watchlist', watchlistJSON);
-        
+          currentElement.setAttribute('onclick', 'removeOffWatchList("'+imdbID+'", this)');
+          currentElement.innerHTML = "Remove From Watchlist";
 }
 
-function removeOffWatchList(imdbID)
+//TODO FIND WATCHLIST ELEMENT IN LOCALSTORAGE AND DELETE IT
+function removeOffWatchList(imdbID,currentElement)
 {
   var watchlistJSON = localStorage.getItem('watchlist');
+  var watchlist = JSON.parse(watchlistJSON);
 
-  
-  var movie = movieData.find(function (currentMovie){
-    return currentMovie.imdbID == imdbID; //returns the value of the FIRST element found that matches criteria.
+  //var movie = watchlist.find(function (currentMovie){
+    //return currentMovie.imdbID == imdbID; //returns the value of the FIRST element found that matches criteria.
     //in this case, it would be the first OBJECT element
-  });
+ // });
 
+ // if(!isEmpty(movie))
+
+  currentElement.setAttribute('onclick', 'saveToWatchList("'+imdbID+'", this)');
+
+  console.log(movie);
 }
