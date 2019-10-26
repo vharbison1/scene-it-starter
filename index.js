@@ -23,10 +23,39 @@ document.addEventListener('DOMContentLoaded', function()
 
     document.getElementById('search-form').addEventListener('submit', function(e){ 
       e.preventDefault(); //Disables the default refresh and renders the movies AFTER user enters items in search bar.
-      renderMovies(movieData);
+
+
+      var searchString = document.getElementById('search-bar').value;
+      //console.log(searchString);
+      var urlEncodedSearchString = encodeURIComponent(searchString); //Sanitize the users string for non-allowed characters
+      var url = "http://www.omdbapi.com/?apikey=3430a78&s=" + urlEncodedSearchString; //call to OMDB API
+    
+      getData(url);
+      
     });
 
+    function getData(url)
+    {
+      axios.get(url)
+      .then( function(response) {
+        console.log(response);
+          if(response.data.Response == "True") //Make sure the response is successful, then render the search results
+          {
+            renderMovies(response.data.Search);
+            movieData = response.data.Search; //Movie Data is Global Variable, so is overriden wirh search results
+          }
+          else 
+          {
+            throw response.data.Error; //If response has results, but is an error, its thrown into catch block.
+          }
+      })
+      .catch( function(error) {     
+        console.log(error);
+      });
+    }
 });
+
+
 
 function saveToWatchList(imdbID)
 {
@@ -47,4 +76,16 @@ function saveToWatchList(imdbID)
           watchlistJSON = JSON.stringify(watchlist);
           localStorage.setItem('watchlist', watchlistJSON);
         
+}
+
+function removeOffWatchList(imdbID)
+{
+  var watchlistJSON = localStorage.getItem('watchlist');
+
+  
+  var movie = movieData.find(function (currentMovie){
+    return currentMovie.imdbID == imdbID; //returns the value of the FIRST element found that matches criteria.
+    //in this case, it would be the first OBJECT element
+  });
+
 }
